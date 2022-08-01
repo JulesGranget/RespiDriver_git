@@ -1,0 +1,23 @@
+ 
+name: respi_driver
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  - python=3.9
+  - pip
+  - numpy
+  - scipy
+  - matplotlib
+  #- pyzmq
+  - pyqt=5.12.3
+  # - av
+  # - x264
+  # - msgpack-python
+  - pyqtgraph=0.12.4
+  # - pip:
+    # - quantities
+    # - neo
+    # - ephyviewer
+    # - pyacq
+    # - idephyx

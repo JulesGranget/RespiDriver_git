@@ -27,6 +27,8 @@ QT_MODE = None
 try:
     import PyQt5
     from PyQt5 import QtCore, QtGui, QtWidgets
+    from PyQt5.QtCore import QUrl
+    from PyQt5.QtMultimedia import QMediaPlayer, QMediaContent, QSound
     QT_MODE = 'PyQt5'
 except :
     try:

@@ -70,7 +70,7 @@ def prepapre_signal_OLD(freq1=0.3, freq2=0.4, cycle_duration=120., total_duratio
     return times, sig, freqs
 
 
-def prepapre_signal(freq1=0.3, freq2=0.4, cycle_duration=120., total_duration=60*10, resp_ratio=0.4, left_pad=2., sample_rate=100.):
+def prepapre_signal(freq1=0.3, freq2=0.4, cycle_duration=120., total_duration=60*10, resp_ratio=0.4, left_pad=2., sample_rate=100., **opt):
     sr = sample_rate
     length = int(sr*total_duration)
 
@@ -153,11 +153,11 @@ class RespirationDriver(QT.QWidget):
         self.plot.showAxis('left', False)
         self.plot.showAxis('bottom', False)
         
-        self.timer = QT.QTimer(singleShot=False, interval=50)
+        self.timer = QT.QTimer(singleShot=False, interval=40)
         self.timer.timeout.connect(self.refresh)
         
     
-    def configure(self, sample_rate=200.,  time_range=6., **kargs):
+    def configure(self, sample_rate=400.,  time_range=6., **kargs):
         if self.timer.isActive():
             print('running')
             return
@@ -165,25 +165,57 @@ class RespirationDriver(QT.QWidget):
         self.time_range = time_range
         self.sample_rate = sample_rate
         self.kargs = kargs
+        if 'mode' not in kargs:
+            kargs['mode'] ='line'
         self.times, self.sig, self.freqs = prepapre_signal(sample_rate=sample_rate, **kargs)
         
+        self.max_sig = np.max(self.sig)
+        self.min_sig = np.min(self.sig)
+        
+        
         # '#ff0066' 4.5
-        self.plot.clear()
-        self.curve = pg.PlotCurveItem(pen=pg.mkPen(cosmetic=True, width=6, color='#a7dc2d'),
-                                                    connect='finite', antialias=True)
-        self.plot.addItem(self.curve)
 
         # '#ff9900' 50
-        self.scatter = pg.ScatterPlotItem(size=100, pxMode=True, brush='#ff9900')
-        self.plot.addItem(self.scatter)
+        self.plot.clear()
+        
+        if self.kargs['mode'] == 'line':
+            self.curve = pg.PlotCurveItem(pen=pg.mkPen(cosmetic=True, width=6, color='#a7dc2d'),
+                                                        connect='finite', antialias=True)
+            self.plot.addItem(self.curve)
+            self.scatter = pg.ScatterPlotItem(size=100, pxMode=True, brush='#ff9900', pen='#ff9900') # brush='#ff9900'
+            self.plot.addItem(self.scatter)
+
+            self.plot.setXRange(0, self.time_range, padding = 0.0)
+            self.plot.setYRange(-1, 1, padding = 0.0)
+
+
+        elif self.kargs['mode'] == 'bouboul':
+            self.curve = pg.PlotCurveItem(pen=pg.mkPen(cosmetic=True, width=6, color='#ff9900'),
+                                                        connect='finite', antialias=True)
+            self.plot.addItem(self.curve)
+            self.plot.setXRange(-1, 1, padding = 0.0)
+            self.plot.setYRange(-1, 1, padding = 0.0)
+            
+            theta = np.linspace(0, 2 * np.pi, 360)
+            self.cicrle_cos = np.cos(theta)
+            self.cicrle_sin = np.sin(theta)
+
+            #~ self.scatter = pg.ScatterPlotItem(size=100, pxMode=True, brush=None, pen='#ff9900') # brush='#ff9900'
+            #~ self.scatter.setPen('#ff9900', width=4)
+            #~ self.plot.addItem(self.scatter)
+            
+            #~ self.curve.setData([], [])
+            #~ self.scatter.setData(x=[0], y=[0])
+            #~ self.plot.setXRange(-1, 1, padding = 0.0)
+            #~ self.plot.setYRange(-1, 1, padding = 0.0)
+
+            
         
         sr = 200.
         #~ self.t_vect = t = np.arange(0,time_range,1/sr)
         #~ self.sig = np.sin(2*np.pi*self.resp_freq*t_vect)
         #~ self.sig = np.sin(2*np.pi*freq*t)
 
-        self.plot.setXRange(0, self.time_range, padding = 0.0)
-        self.plot.setYRange(-1, 1, padding = 0.0)
         
         self.annotation_changed.emit(kargs)
         
@@ -203,15 +235,41 @@ class RespirationDriver(QT.QWidget):
         ind0 = int(elapsed * self.sample_rate)
         ind1 = int((elapsed+self.time_range) * self.sample_rate)
         
-        t_vect = self.times[ind0:ind1]
-        sig = self.sig[ind0:ind1]
         
-        self.curve.setData(t_vect, sig)
+        #~ print(ind0)
         
-        self.plot.setXRange(elapsed, elapsed+self.time_range, padding = 0.0)
+        if self.kargs['mode'] == 'line':
+
+            t_vect = self.times[ind0:ind1]
+            sig = self.sig[ind0:ind1]
+
+            self.curve.setData(t_vect, sig)
+            
+            self.plot.setXRange(elapsed, elapsed+self.time_range, padding = 0.0)
+            
+            s = t_vect.size//2
+            self.scatter.setData(x=t_vect[s], y=[sig[s]])
         
-        s = t_vect.size//2
-        self.scatter.setData(x=t_vect[s], y=[sig[s]])
+        elif self.kargs['mode'] == 'bouboul':
+            
+            #~ size_min = 100
+            #~ size_max = 300
+            #~ size_min = 0.1
+            #~ size_max = 0.8
+            
+            size = (self.sig[(ind0 + ind1)//2] - self.min_sig) / (self.max_sig - self.min_sig)
+            size *= 0.6
+            size += 0.3
+            
+            cicrle_x = size * self.cicrle_cos
+            cicrle_y = size * self.cicrle_sin
+            
+            
+            self.curve.setData(x=cicrle_x, y=cicrle_y)
+            
+            
+            
+            
         
         if self.show_label:
             self.label.setText('respiration freq = {:0.2}Hz'.format(self.freqs[ind0+s]))
@@ -233,6 +291,9 @@ class RespirationDriverController(QT.QWidget):
             {'name': 'freq2', 'type': 'float', 'value' : 0.4},
             {'name': 'cycle_duration', 'type': 'float', 'value' : 120.},
             {'name': 'resp_ratio', 'type': 'float', 'value' : 0.4},
+            {'name': 'mode', 'type': 'list', 'values' : ['line', 'bouboul']},
+            
+            
         ]
            
         self.params = pg.parametertree.Parameter.create(name='Params', type='group', children=d)

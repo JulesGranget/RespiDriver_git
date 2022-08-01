@@ -8,6 +8,7 @@ from myqt import QT, mkQApp
 
 from respiration_driver import RespirationDriver
 
+from qt_sounddevice import SoundPlayer
 
 PARALLEL_SLEEP = 0.010
 
@@ -126,6 +127,12 @@ class ProtocolWindow(QT.QWidget):
             self.question_slide.done.connect(self.on_question_done)
             self.question_slide.start(step['question_list'])
         
+        if step['type'] == 'son':
+            # self.sound_player = SoundPlayer(f"{path_soundfile}/{step['sound_file']}")
+            self.sound_player = SoundPlayer(step['sound_file'])
+            self.sound_player.sound_finished.connect(self.on_sound_done)
+            self.sound_player.start()
+
         if 'trigger' in step:
             trigger = step['trigger']
             txt = '[Trig {}] [{}]\n'.format(trigger, datetime.datetime.now().isoformat())
@@ -158,6 +165,12 @@ class ProtocolWindow(QT.QWidget):
         self.question_slide.hide()
         self.layout.removeWidget(self.question_slide)
         self.question_slide = None
+
+        self.next_step()
+
+    def on_sound_done(self):
+        self.sound_player.wait()
+        self.sound_player = None
         
         self.next_step()
 
@@ -306,6 +319,8 @@ def debug_protocolwindow():
 
     steps = [
         {'type': 'question', 'question_list': question_list1},
+        {'type': 'son', 'sound_file': 'AMBForst.wav'},
+
         {'type': 'display', 'duration': 'wait_key', 'text' : style+txt1, 'trigger' : 1},
         {'type': 'question', 'question_list': question_list2, 'trigger' : 2},
         {'type': 'respidriver', 'duration':5, 'params' : {'freq1' : .15, 'freq2':.2, 'cycle_duration':60, 'resp_ratio' : .4, 'left_pad': 6.}, 'trigger' : 3},
@@ -327,41 +342,6 @@ def debug_protocolwindow():
     
 
 
-def test_trigger_serial():
-    # pip install pyserial
-    
-    import serial
-    baudrate = 9600
-    serial_port = 'COM6'
-    # serial_port = 'COM3'
-    
-    
-    # serial = serial.Serial('/dev/ttyUSB0', baudrate, parity=serial.PARITY_EVEN, rtscts=1) 
-    serial = serial.Serial(serial_port, baudrate, parity=serial.PARITY_EVEN, rtscts=1) 
-    
-    for trigger in [1, 2, 3, 4, 5, 10, 30, 50, 60, 100, 200]:
-        paquet = chr(trigger).encode()
-        print('paquet', paquet)
-        serial.write(paquet)
-        time.sleep(1)
-
-
-def test_trigger_parralel(parallel_adress):
-    # import parallel
-    # port = parallel.Parallel()  # open LPT1 or /dev/parport0
-
-    # LPT1 : "0x0378"
-    # LPT2 : "0xC030"
-    from psychopy import parallel
-    port = parallel.ParallelPort(address=parallel_adress)
-    
-    #for trigger in [1, 2, 3, 4, 5, 10, 30, 50, 60, 100, 200]:
-    for trigger in [1, 2, 4, 255]:
-        print('trigger', trigger)
-        port.setData(trigger)
-        time.sleep(0.5)
-        port.setData(0x00)
-        time.sleep(1.0)
         
     
     
@@ -374,10 +354,7 @@ def test_trigger_parralel(parallel_adress):
 if __name__ == '__main__':
     # test_question()
     
-    # debug_protocolwindow()
-    
-    #~ test_trigger_serial()
-    test_trigger_parralel()
+    debug_protocolwindow()
     
     
     

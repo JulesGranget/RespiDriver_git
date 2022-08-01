@@ -1,0 +1,4 @@
+ 
+conda env create --file=environement_respi_driver.yaml
+
+installation for sound device
