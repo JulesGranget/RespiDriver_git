@@ -31,9 +31,9 @@ class ProtocolWindow(QT.QWidget):
             baudrate = 9600
             self.serial = serial.Serial(serial_port, baudrate)
         
-        if self.with_parallel:
-            from psychopy import parallel
-            self.port = parallel.ParallelPort(address=parallel_adress)
+        #if self.with_parallel:
+        #    from psychopy import parallel
+        #    self.port = parallel.ParallelPort(address=parallel_adress)
         
         self.steps = steps
         self.log_name = log_name
@@ -143,11 +143,11 @@ class ProtocolWindow(QT.QWidget):
                 print('paquet', paquet)
                 self.serial.write(paquet)
             
-            if self.with_parallel:
-                from psychopy import parallel
-                self.port.setData(int(trigger))
-                time.sleep(PARALLEL_SLEEP)
-                self.port.setData(0x00)
+            #if self.with_parallel:
+            #    from psychopy import parallel
+            #    self.port.setData(int(trigger))
+            #    time.sleep(PARALLEL_SLEEP)
+            #    self.port.setData(0x00)
 
     def keyPressEvent(self, event):
         if self.key_enable:

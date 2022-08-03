@@ -1,4 +1,9 @@
  
 conda env create --file=environement_respi_driver.yaml
 
-installation for sound device
+pip install sounddevice
+pip install soundfile
+
+WARNING
+for the serial module, do not install serial but pyserial
+pip install pyserial

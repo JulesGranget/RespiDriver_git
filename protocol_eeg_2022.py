@@ -7,6 +7,12 @@ import os
 from protocolwindow import ProtocolWindow
 from protocol_eeg_slides_2022 import *
 from path_stimuli import *
+import time
+
+
+
+
+
 
 ########################
 ######## PARAMS ########
@@ -50,11 +56,15 @@ params_RD_debug = {
 
 'duree_presentation' : 1,
 'duree_entrainement' : 1,
-'duree_blocs' : 3,
+'duree_blocs' : 20,
 'duree_repos' : 1,
 'duree_entrainement_repos' : 1
 
 }
+
+
+
+
 
 
 ########################
@@ -76,6 +86,9 @@ sound_num = 10
 all_session = ['lent', 'lent', 'lent', 'rapide', 'rapide', 'rapide', 'confort', 'confort', 'confort']
 all_session_random = all_session.copy()
 random.shuffle(all_session_random)
+
+
+
 
 
 
@@ -154,6 +167,8 @@ def random_sound(already_selected):
 	os.chdir(path_source)
 
 	return random_file, already_selected
+
+
 
 
 
@@ -269,6 +284,13 @@ block_50 = [
     {'type': 'display', 'duration': 'wait_key', 'text' : style+session_txt6, 'trigger' :55},
 
 ]
+
+
+
+
+
+
+
 
 
 
@@ -547,6 +569,10 @@ def get_protocol_session(mode_respi_driver, params_RD_used):
 
 
 
+
+
+
+
 ################################
 ######## START PROTOCOLE ########
 ################################
@@ -584,25 +610,77 @@ def start_protocolwindow(sujet, num_session, protocol, with_parallel=False, para
 
 
 
+
+
+
+
+
+################################
+######## TEST TRIG ########
+################################
+
+def test_trigger_serial():
+    # pip install pyserial
+   
+    import serial
+    baudrate = 9600
+    serial_port = 'COM5'
+    # serial_port = 'COM3'
+   
+   
+    # serial = serial.Serial('/dev/ttyUSB0', baudrate, parity=serial.PARITY_EVEN, rtscts=1)
+    serial = serial.Serial(serial_port, baudrate, parity=serial.PARITY_EVEN, rtscts=1)
+   
+    for trigger in [1, 2, 3, 4, 5, 10, 30, 50, 60, 100, 195]:
+        paquet = chr(trigger).encode()
+        print('paquet', paquet)
+        serial.write(paquet)
+        time.sleep(1)
+
+	#### note
+	# 195 is the max number of trig we can send
+
+
+
+
+
+
+
+
+################################
+######## EXECUTE ########
+################################
+
+
 if __name__ == '__main__':
 
-	#### params
-	# mode_respi_driver = 'line'
-	mode_respi_driver = 'bouboul'
+	#### launch params
+	test_trig = False
+	start_respidriver = True
 
-	# params_RD_used = params_RD_protocole
-	params_RD_used = params_RD_debug
+	#### test trig
+	if test_trig:
 
-	#### protocol selection
-	# protocol = get_protocol_session(mode_respi_driver, params_RD_used)
-	protocol = get_protocole_absolute_evaluation(params_RD_used)
+		test_trigger_serial()
 
-	#### sujet information
-	sujet = '04'
-	num_session = 3
+	#### RespiDriver
+	if start_respidriver:
 
-	#### start
-	start_protocolwindow(sujet, num_session, protocol, with_serial=False, serial_port=None)
+		#### params
+		# mode_respi_driver = 'line'
+		mode_respi_driver = 'bouboul'
+
+		# params_RD_used = params_RD_protocole
+		params_RD_used = params_RD_debug
+
+		protocol = get_protocol_session(mode_respi_driver, params_RD_used)
+		# protocol = get_protocole_absolute_evaluation(params_RD_used)
+
+		sujet = '04'
+		num_session = 3
+
+		#### start
+		start_protocolwindow(sujet, num_session, protocol, with_serial=True, serial_port='COM5')
 
 
 

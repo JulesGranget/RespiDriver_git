@@ -32,8 +32,8 @@ try:
     QT_MODE = 'PyQt5'
 except :
     try:
-        import PyQt4
-        from PyQt4 import QtCore, QtGui
+        #import PyQt4
+        #from PyQt4 import QtCore, QtGui
         QT_MODE = 'PyQt4'
     except ImportError:
         print('no PyQt5/PyQt4')
