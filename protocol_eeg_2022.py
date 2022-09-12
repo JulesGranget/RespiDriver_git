@@ -22,20 +22,20 @@ import time
 
 params_RD_protocole = {
 
-'freq_confort' : 0.21, # CHANGER SELON LA FREQ CONFORT DU SUJET
+'freq_confort' : 0.25, # CHANGER SELON LA FREQ CONFORT DU SUJET
 'freq_lent' : 0.1,
-'freq_rapide' : 0.5,
+'freq_rapide' : 0.4,
 
 'duree_entrainement_absolute_evaluation' : 15,
 'duration_absolute_evaluation' : 30,
-'duration_absolute_evaluation_other_stim' : 5,
+'duration_absolute_evaluation_other_stim' : 10,
 'duration_absolute_evaluation_rest' : 30,
 
-'duration_freeresp' : 30,
+'duration_freeresp' : 300,
 
 'duree_presentation' : 20,
 'duree_entrainement' : 40,
-'duree_blocs' : 300,
+'duree_blocs' : 180,
 'duree_repos' : 15,
 'duree_entrainement_repos' : 10
 
@@ -72,7 +72,7 @@ params_RD_debug = {
 ########################
 
 #### odor presentation
-odor_num = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+odor_num = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13]
 odor_num_random = odor_num.copy()
 random.shuffle(odor_num_random)
 
@@ -309,7 +309,7 @@ def select_session_freq(protocole, cond, params_RD_used):
         protocole.append({'type': 'respidriver', 'duration': params_RD_used['duree_blocs'], 'params' : {'freq1' : params_RD_used['freq_lent'], 'freq2': params_RD_used['freq_lent'], 'cycle_duration':30, 'resp_ratio' : .4, 'left_pad': 6., 'mode': mode_respi_driver}, 'trigger':11})
         protocole.append({'type': 'display', 'duration': 'wait_key', 'text' : style+session_txt3, 'trigger':12})
         protocole.append({'type': 'question', 'question_list': question_list_STAI, 'trigger':13})
-        protocole.append({'type': 'display', 'duration': params_RD_used['duree_blocs'], 'text' : style+session_txt5, 'trigger' :14})
+        protocole.append({'type': 'display', 'duration': params_RD_used['duree_repos'], 'text' : style+session_txt5, 'trigger' :14})
         protocole.append({'type': 'display', 'duration': 'wait_key', 'text' : style+session_txt6, 'trigger' :15})
 
     if cond == 'confort':
@@ -319,7 +319,7 @@ def select_session_freq(protocole, cond, params_RD_used):
         protocole.append({'type': 'respidriver', 'duration': params_RD_used['duree_blocs'], 'params' : {'freq1' : params_RD_used['freq_confort'], 'freq2': params_RD_used['freq_confort'], 'cycle_duration':30, 'resp_ratio' : .4, 'left_pad': 6., 'mode': mode_respi_driver}, 'trigger':31})
         protocole.append({'type': 'display', 'duration': 'wait_key', 'text' : style+session_txt3, 'trigger':32})
         protocole.append({'type': 'question', 'question_list': question_list_STAI, 'trigger':33})
-        protocole.append({'type': 'display', 'duration': params_RD_used['duree_blocs'], 'text' : style+session_txt5, 'trigger' :34})
+        protocole.append({'type': 'display', 'duration': params_RD_used['duree_repos'], 'text' : style+session_txt5, 'trigger' :34})
         protocole.append({'type': 'display', 'duration': 'wait_key', 'text' : style+session_txt6, 'trigger' :35})
 
     if cond == 'rapide':
@@ -329,7 +329,7 @@ def select_session_freq(protocole, cond, params_RD_used):
         protocole.append({'type': 'respidriver', 'duration': params_RD_used['duree_blocs'], 'params' : {'freq1' : params_RD_used['freq_rapide'], 'freq2': params_RD_used['freq_rapide'], 'cycle_duration':30, 'resp_ratio' : .4, 'left_pad': 6., 'mode': mode_respi_driver}, 'trigger':51})
         protocole.append({'type': 'display', 'duration': 'wait_key', 'text' : style+session_txt3, 'trigger':52})
         protocole.append({'type': 'question', 'question_list': question_list_STAI, 'trigger':53})
-        protocole.append({'type': 'display', 'duration': params_RD_used['duree_blocs'], 'text' : style+session_txt5, 'trigger' :54})
+        protocole.append({'type': 'display', 'duration': params_RD_used['duree_repos'], 'text' : style+session_txt5, 'trigger' :54})
         protocole.append({'type': 'display', 'duration': 'wait_key', 'text' : style+session_txt6, 'trigger' :55})
 
 
@@ -670,17 +670,17 @@ if __name__ == '__main__':
 		# mode_respi_driver = 'line'
 		mode_respi_driver = 'bouboul'
 
-		# params_RD_used = params_RD_protocole
-		params_RD_used = params_RD_debug
+		params_RD_used = params_RD_protocole
+		# params_RD_used = params_RD_debug
 
-		protocol = get_protocol_session(mode_respi_driver, params_RD_used)
-		# protocol = get_protocole_absolute_evaluation(params_RD_used)
+		# protocol = get_protocol_session(mode_respi_driver, params_RD_used)
+		protocol = get_protocole_absolute_evaluation(params_RD_used)
 
-		sujet = '04'
-		num_session = 3
+		sujet = 'test'
+		num_session = 1
 
 		#### start
-		start_protocolwindow(sujet, num_session, protocol, with_serial=True, serial_port='COM5')
+		start_protocolwindow(sujet, num_session, protocol, with_serial=False, serial_port='COM5')
 
 
 
